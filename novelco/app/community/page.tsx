@@ -100,10 +100,6 @@ const handleHeart = async (postId: string) => {
       {/* Navigation matching WriteNovel */}
       <nav className="flex justify-between items-center px-8 py-4 border-b border-stone-200 bg-white/80 backdrop-blur-md sticky top-0 z-10">
         <Link href="/" className="text-xl font-bold tracking-tighter">NovelCo.</Link>
-        <div className="flex items-center gap-6">
-          <Link href="/write" className="text-xs font-bold font-sans uppercase tracking-widest hover:text-orange-700">Write</Link>
-          <UserButton />
-        </div>
       </nav>
 
       <main className="max-w-2xl mx-auto pt-16 px-6 text-center">

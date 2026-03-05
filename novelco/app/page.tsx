@@ -21,18 +21,36 @@ export default function Home() {
           <Link href="/community" className="hover:text-orange-700">Community</Link>
           <Link href="/marketplace" className="hover:text-orange-700">Marketplace</Link>
         </div>
-        <div className="flex items-center gap-4">
-          <Show when="signed-out">
-            <SignInButton mode="modal">
-              <button className="bg-stone-900 text-white px-6 py-2 rounded-full font-sans text-xs hover:bg-orange-700 transition-all cursor-pointer">
-                Sign In
-              </button>
-            </SignInButton>
-          </Show>
-          <Show when="signed-in">
-            <UserButton />
-          </Show>
-        </div>
+<div className="flex items-center gap-4">
+  {/* Show "Sign In" only when the user is logged out */}
+  <Show when="signed-out">
+    <SignInButton mode="modal">
+      <button className="bg-stone-900 text-white px-6 py-2 rounded-full font-sans text-xs hover:bg-orange-700 transition-all cursor-pointer">
+        Sign In
+      </button>
+    </SignInButton>
+  </Show>
+
+  {/* Show these options only when the user is logged in */}
+<div className="flex items-center gap-4">
+
+
+  <Show when="signed-in">
+    <div className="flex items-center gap-6">
+      {/* 1. Standard Link next to Avatar - Best for minimalist UI */}
+      <Link 
+        href="/profile" 
+        className="text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-stone-400 hover:text-stone-900 transition-colors"
+      >
+        My Space
+      </Link>
+      
+      {/* 2. Standard UserButton without nested children to avoid prop errors */}
+      <UserButton afterSignOutUrl="/" />
+    </div>
+  </Show>
+</div>
+</div>
       </nav>
 
       {/* Hero Section */}

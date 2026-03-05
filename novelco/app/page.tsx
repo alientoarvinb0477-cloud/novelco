@@ -1,12 +1,4 @@
 
-cd novelco
-git remote add origin https://github.com/alientoarvinb0477-cloud/novelco.git
-
-git add .
-git commit -m "Initial NovelCo setup"
-git push -u origin main
-
-
 
 "use client";
 

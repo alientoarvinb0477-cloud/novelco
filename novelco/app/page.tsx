@@ -30,6 +30,9 @@ export default function Home() {
             </SignInButton>
           </Show>
           <Show when="signed-in">
+  <Link href="/profile" className="hover:text-orange-700">My Space</Link>
+
+
             <UserButton />
           </Show>
         </div>

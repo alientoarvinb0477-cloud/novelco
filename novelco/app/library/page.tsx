@@ -11,7 +11,7 @@ export default function LibraryPage() {
 
   useEffect(() => {
     async function fetchStories() {
-      // This pulls your real data from the 'stories' table you just created
+      // Pulling the latest stories including views and hearts
       const { data, error } = await supabase
         .from('stories')
         .select('*')
@@ -47,24 +47,29 @@ export default function LibraryPage() {
             {stories.map((story) => (
               <Link href={`/read/${story.id}`} key={story.id} className="group">
                 <div className="aspect-[3/4] bg-white border-l-8 border-stone-900 rounded-r-xl shadow-md group-hover:shadow-2xl group-hover:-translate-y-2 transition-all duration-500 p-10 flex flex-col justify-between">
-                  <span className="text-[10px] font-bold font-sans tracking-widest text-stone-400 uppercase">NOVEL</span>
-                  <h3 className="text-3xl italic leading-tight group-hover:text-orange-700 transition-colors">"{story.title}"</h3>
-                  <div className="font-sans text-[10px] font-bold tracking-widest uppercase text-stone-900">
-                    By {story.author_name}
+                  <div>
+                    <span className="text-[10px] font-bold font-sans tracking-widest text-stone-400 uppercase">NOVEL</span>
+                    <h3 className="text-3xl italic leading-tight group-hover:text-orange-700 transition-colors mt-4">"{story.title}"</h3>
                   </div>
 
-<div className="flex justify-between mt-4 font-sans text-[10px] text-stone-400">
-  <span>👁️ {story.views || 0} views</span>
-  <span>❤️ {story.hearts || 0}</span>
-</div>
-
-
+                  <div>
+                    <div className="font-sans text-[10px] font-bold tracking-widest uppercase text-stone-900 mb-4">
+                      By {story.author_name}
+                    </div>
+                    
+                    {/* STATS SECTION */}
+                    <div className="flex items-center gap-4 border-t border-stone-100 pt-4 font-sans text-[10px] text-stone-400">
+                      <span className="flex items-center gap-1">
+                        👁️ {story.views || 0}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        ❤️ {story.hearts || 0}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </Link>
             ))}
-            {stories.length === 0 && (
-              <p className="col-span-3 text-center text-stone-400 font-sans italic">The library is empty. Be the first to publish!</p>
-            )}
           </div>
         )}
       </main>

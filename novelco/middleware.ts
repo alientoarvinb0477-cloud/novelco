@@ -5,7 +5,8 @@ const isProtectedRoute = createRouteMatcher(['/write(.*)']);
 
 export default clerkMiddleware(async (auth, req) => {
   if (isProtectedRoute(req)) {
-    await auth.protect(); // Added await and removed the () after auth
+    // You must 'await' the protect function in the new Clerk version
+    await auth.protect(); 
   }
 });
 

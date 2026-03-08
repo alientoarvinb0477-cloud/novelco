@@ -78,7 +78,8 @@ function WriteEditor() {
               >
                 {isSaving ? "PUBLISHING..." : "PUBLISH NOW"}
               </button>
-              <UserButton fallbackRedirectUrl="/" />
+              {/* FIXED: Changed fallbackRedirectUrl to afterSignOutUrl to resolve Type Error */}
+              <UserButton afterSignOutUrl="/" />
             </>
           ) : (
             <SignInButton mode="modal">

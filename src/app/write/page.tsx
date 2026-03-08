@@ -6,7 +6,6 @@ import { supabase } from "@/lib/supabase";
 import { UserButton, useUser, SignInButton } from "@clerk/nextjs";
 import Link from "next/link";
 
-// This tells Next.js to skip static generation for this route
 export const dynamic = 'force-dynamic';
 
 function WriteEditor() {
@@ -78,7 +77,6 @@ function WriteEditor() {
               >
                 {isSaving ? "PUBLISHING..." : "PUBLISH NOW"}
               </button>
-              {/* Prop removed to fix the "afterSignOutUrl" Type Error */}
               <UserButton />
             </>
           ) : (

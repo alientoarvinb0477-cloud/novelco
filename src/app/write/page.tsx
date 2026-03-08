@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { UserButton, useUser, SignInButton } from "@clerk/nextjs";
 import Link from "next/link";
 
-// 1. Separate the logic into a child component to handle useSearchParams safely
+// 1. Move all logic using useSearchParams into this inner component
 function WriteEditor() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -27,8 +27,8 @@ function WriteEditor() {
           .single();
 
         if (data && !error) {
-          setTitle(data.title);
-          setContent(data.content);
+          setTitle(data.title || "");
+          setContent(data.content || "");
         }
       };
       loadDraft();
@@ -78,7 +78,6 @@ function WriteEditor() {
               >
                 {isSaving ? "PUBLISHING..." : "PUBLISH NOW"}
               </button>
-              {/* Using the fixed Clerk prop here */}
               <UserButton fallbackRedirectUrl="/" />
             </>
           ) : (
@@ -110,10 +109,10 @@ function WriteEditor() {
   );
 }
 
-// 2. The default export MUST be wrapped in Suspense for the Vercel build to pass
+// 2. The main export MUST be wrapped in Suspense to prevent Vercel build failure
 export default function WriteNovelPage() {
   return (
-    <Suspense fallback={<div className="p-20 text-center font-sans text-stone-400 uppercase tracking-widest">Loading Editor...</div>}>
+    <Suspense fallback={<div className="p-20 text-center font-sans text-stone-400">Loading Editor...</div>}>
       <WriteEditor />
     </Suspense>
   );

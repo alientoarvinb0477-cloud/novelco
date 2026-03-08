@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { UserButton, useUser, SignInButton } from "@clerk/nextjs";
 import Link from "next/link";
 
-// Move this to the top or bottom, but ensure it's exported clearly
+// This tells Next.js to skip static generation for this route
 export const dynamic = 'force-dynamic';
 
 function WriteEditor() {
@@ -26,7 +26,6 @@ function WriteEditor() {
           .select('title, content')
           .eq('id', draftId)
           .single();
-        
         if (data && !error) { 
           setTitle(data.title || ""); 
           setContent(data.content || ""); 
@@ -64,7 +63,7 @@ function WriteEditor() {
         <Link href="/" className="text-xl font-bold tracking-tighter">NovelCo.</Link>
         <div className="flex items-center gap-4">
           {isLoaded && user ? (
-            <> {/* Fixed Fragment syntax */}
+            <>
               <button 
                 onClick={() => handleSave(false)} 
                 disabled={isSaving} 
@@ -107,6 +106,7 @@ function WriteEditor() {
   );
 }
 
+// Wrapping the entire component in Suspense is mandatory when using useSearchParams
 export default function WriteNovelPage() {
   return (
     <Suspense fallback={<div className="p-20 text-center font-sans text-stone-400">Loading Editor...</div>}>

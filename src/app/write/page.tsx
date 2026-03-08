@@ -78,7 +78,7 @@ function WriteEditor() {
               >
                 {isSaving ? "PUBLISHING..." : "PUBLISH NOW"}
               </button>
-              {/* Removed redirect props to fix TypeScript build error */}
+              {/* Prop removed to fix the "afterSignOutUrl" Type Error */}
               <UserButton />
             </>
           ) : (
@@ -107,7 +107,6 @@ function WriteEditor() {
   );
 }
 
-// Wrapping the entire component in Suspense handles the useSearchParams error during build
 export default function WriteNovelPage() {
   return (
     <Suspense fallback={<div className="p-20 text-center font-sans text-stone-400">Loading Editor...</div>}>

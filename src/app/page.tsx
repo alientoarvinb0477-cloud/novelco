@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { SignInButton, UserButton, SignedIn, SignedOut } from '@clerk/nextjs';
+import { SignInButton, UserButton, Authenticated, Unauthenticated } from '@clerk/nextjs';
 import Link from 'next/link';
 
 export default function Home() {
@@ -27,56 +27,58 @@ export default function Home() {
             <Link href="/" className="text-stone-900 border-b-2 border-stone-900 pb-1">Library</Link>
             <Link href="/community" className="hover:text-orange-700 transition-colors">Community</Link>
             <Link href="/marketplace" className="hover:text-orange-700 transition-colors">Marketplace</Link>
-            <SignedIn>
+            <Authenticated>
               <Link href="/profile" className="hover:text-orange-700 transition-colors">My Space</Link>
-            </SignedIn>
+            </Authenticated>
           </div>
 
           {/* Right Side: Auth & Menu Toggle */}
           <div className="flex items-center gap-4">
             <div className="hidden md:block">
-              <SignedOut>
+              <Unauthenticated>
                 <SignInButton mode="modal">
                   <button className="bg-stone-900 text-white px-6 py-2 rounded-full font-sans text-xs hover:bg-orange-700 transition-all cursor-pointer">
                     Sign In
                   </button>
                 </SignInButton>
-              </SignedOut>
-              <SignedIn>
+              </Unauthenticated>
+              <Authenticated>
                 <UserButton />
-              </SignedIn>
+              </Authenticated>
             </div>
 
             {/* Mobile Hamburger Button */}
             <button 
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden flex flex-col gap-1.5 p-2"
+              className="md:hidden flex flex-col gap-1.5 p-2 focus:outline-none"
             >
-              <span className={`h-0.5 w-6 bg-stone-900 transition-transform ${isMenuOpen ? 'rotate-45 translate-y-2' : ''}`} />
-              <span className={`h-0.5 w-6 bg-stone-900 transition-opacity ${isMenuOpen ? 'opacity-0' : ''}`} />
-              <span className={`h-0.5 w-6 bg-stone-900 transition-transform ${isMenuOpen ? '-rotate-45 -translate-y-2' : ''}`} />
+              <span className={`h-0.5 w-6 bg-stone-900 transition-all duration-300 ${isMenuOpen ? 'rotate-45 translate-y-2' : ''}`} />
+              <span className={`h-0.5 w-6 bg-stone-900 transition-all duration-300 ${isMenuOpen ? 'opacity-0' : ''}`} />
+              <span className={`h-0.5 w-6 bg-stone-900 transition-all duration-300 ${isMenuOpen ? '-rotate-45 -translate-y-2' : ''}`} />
             </button>
           </div>
         </div>
 
         {/* Mobile Menu Overlay */}
         {isMenuOpen && (
-          <div className="md:hidden bg-white border-t border-stone-100 flex flex-col p-6 space-y-6 font-sans text-sm font-bold uppercase tracking-widest text-stone-500 animate-in slide-in-from-top duration-300">
+          <div className="md:hidden bg-white border-t border-stone-100 flex flex-col p-6 space-y-6 font-sans text-sm font-bold uppercase tracking-widest text-stone-500">
             <Link href="/" onClick={() => setIsMenuOpen(false)}>Library</Link>
             <Link href="/community" onClick={() => setIsMenuOpen(false)}>Community</Link>
             <Link href="/marketplace" onClick={() => setIsMenuOpen(false)}>Marketplace</Link>
-            <SignedIn>
+            
+            <Authenticated>
               <Link href="/profile" onClick={() => setIsMenuOpen(false)}>My Space</Link>
               <div className="pt-4 border-t border-stone-100 flex items-center justify-between">
                 <span className="text-xs text-stone-400">Account</span>
                 <UserButton />
               </div>
-            </SignedIn>
-            <SignedOut>
+            </Authenticated>
+
+            <Unauthenticated>
               <SignInButton mode="modal">
-                <button className="w-full bg-stone-900 text-white py-4 rounded-xl text-xs">Sign In</button>
+                <button className="w-full bg-stone-900 text-white py-4 rounded-xl text-xs font-bold">Sign In</button>
               </SignInButton>
-            </SignedOut>
+            </Unauthenticated>
           </div>
         )}
       </nav>

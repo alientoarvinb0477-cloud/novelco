@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { UserButton, useUser, SignInButton } from "@clerk/nextjs";
 import Link from "next/link";
 
-// 1. Move your main logic into a separate internal component
+// 1. Component that uses the searchParams
 function WriteEditor() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -74,7 +74,7 @@ function WriteEditor() {
             </>
           ) : (
             <SignInButton mode="modal">
-              <button className="bg-orange-50 text-orange-800 px-6 py-2 rounded-full font-sans text-xs font-bold uppercase tracking-widest">Sign in to Publish</button>
+              <button className="bg-stone-900 text-white px-6 py-2 rounded-full font-sans text-xs font-bold uppercase tracking-widest">Sign in to Publish</button>
             </SignInButton>
           )}
         </div>
@@ -88,10 +88,10 @@ function WriteEditor() {
   );
 }
 
-// 2. The default export MUST wrap the component in Suspense
-export default function WriteNovel() {
+// 2. Main Page Export wrapped in Suspense
+export default function WriteNovelPage() {
   return (
-    <Suspense fallback={<div className="p-20 text-center font-sans text-stone-400 uppercase tracking-widest">Loading Editor...</div>}>
+    <Suspense fallback={<div className="p-20 text-center font-sans text-stone-400">Loading Editor...</div>}>
       <WriteEditor />
     </Suspense>
   );

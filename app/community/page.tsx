@@ -1,18 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react"; // Added Suspense
 import { supabase } from "@/lib/supabase";
-import { UserButton, useUser } from "@clerk/nextjs";
+import { UserButton, useUser, SignInButton } from "@clerk/nextjs"; // Added SignInButton
 import Link from "next/link";
 
-export default function CommunityWall() {
+function CommunityContent() { // Extracted logic for Suspense safety
   const { user, isLoaded } = useUser();
   const [posts, setPosts] = useState<any[]>([]);
   const [newPost, setNewPost] = useState("");
   const [isPosting, setIsPosting] = useState(false);
   const [activePostId, setActivePostId] = useState<string | null>(null);
 
-  // 1. Fetch posts with nested reactions and comments
   const fetchPosts = async () => {
     const { data, error } = await supabase
       .from("posts")
@@ -30,7 +29,6 @@ export default function CommunityWall() {
     fetchPosts();
   }, []);
 
-  // 2. Handle New Post
   const handlePostSubmit = async () => {
     if (!newPost.trim() || !user) return;
     setIsPosting(true);
@@ -43,70 +41,55 @@ export default function CommunityWall() {
       },
     ]);
 
-    if (error) {
-      alert("Error: " + error.message);
-    } else {
+    if (!error) {
       setNewPost("");
       fetchPosts(); 
     }
     setIsPosting(false);
   };
 
-  // 3. Handle Heart Reaction
-const handleHeart = async (postId: string) => {
-  if (!user) return alert("Sign in to react!");
+  const handleHeart = async (postId: string) => {
+    if (!user) return alert("Sign in to react!");
+    const { error } = await supabase.from("reactions").insert([
+      { post_id: postId, user_id: user.id }
+    ]);
+    if (!error || error.code === '23505') fetchPosts();
+  };
 
-  const { error } = await supabase.from("reactions").insert([
-    { post_id: postId, user_id: user.id }
-  ]);
-
-  if (error) {
-    // 42501 is the unique constraint error code
-    if (error.code === '23505') { 
-      console.log("User already liked this post.");
-    } else {
-      alert("Error: " + error.message);
-    }
-  } else {
-    fetchPosts();
-  }
-};
-
-  // 4. Handle Comment Submission
- const handleComment = async (postId: string, text: string) => {
-  if (!user || !text.trim()) return;
-
-  const { error } = await supabase.from("comments").insert([
-    {
-      post_id: postId,
-      user_id: user.id,
-      username: user.fullName || "Anonymous",
-      comment_text: text, // Matches your schema column
-    },
-  ]);
-
-  if (error) {
-    alert("Comment Error: " + error.message);
-  } else {
-    fetchPosts();
-  }
-};
-
-
-
+  const handleComment = async (postId: string, text: string) => {
+    if (!user || !text.trim()) return;
+    const { error } = await supabase.from("comments").insert([
+      {
+        post_id: postId,
+        user_id: user.id,
+        username: user.fullName || "Anonymous",
+        comment_text: text,
+      },
+    ]);
+    if (!error) fetchPosts();
+  };
 
   return (
     <div className="min-h-screen bg-[#FDFCFB] text-stone-900 font-serif">
-      {/* Navigation matching WriteNovel */}
       <nav className="flex justify-between items-center px-8 py-4 border-b border-stone-200 bg-white/80 backdrop-blur-md sticky top-0 z-10">
         <Link href="/" className="text-xl font-bold tracking-tighter">NovelCo.</Link>
+        <div className="flex items-center gap-4">
+          {isLoaded && user ? (
+            <UserButton fallbackRedirectUrl="/" /> // Added to match WriteNovel fix
+          ) : (
+            <SignInButton mode="modal">
+               <button className="bg-stone-900 text-white px-6 py-2 rounded-full font-sans text-xs font-bold uppercase tracking-widest">
+                Sign In
+              </button>
+            </SignInButton>
+          )}
+        </div>
       </nav>
 
       <main className="max-w-2xl mx-auto pt-16 px-6 text-center">
         <h1 className="text-5xl font-bold mb-4 tracking-tight">Community Thoughts</h1>
         <p className="text-stone-500 font-sans italic mb-12 text-lg">Shared moments from fellow writers.</p>
 
-        {/* Post Input Box */}
         {isLoaded && user ? (
           <div className="mb-16 pb-12 border-b border-stone-100 text-left">
             <textarea
@@ -131,7 +114,6 @@ const handleHeart = async (postId: string) => {
           </div>
         )}
 
-        {/* The Wall Feed */}
         <div className="space-y-12 pb-20 text-left">
           {posts.map((post) => (
             <article key={post.id} className="p-8 bg-white border border-stone-100 rounded-3xl shadow-sm transition-all hover:shadow-md">
@@ -143,16 +125,11 @@ const handleHeart = async (postId: string) => {
               <p className="text-xl leading-relaxed text-stone-800 mb-6">{post.content}</p>
               
               <div className="flex gap-6 items-center border-t border-stone-50 pt-4">
-                {/* Heart Button */}
-                <button 
-                  onClick={() => handleHeart(post.id)}
-                  className="flex items-center gap-2 group"
-                >
+                <button onClick={() => handleHeart(post.id)} className="flex items-center gap-2 group">
                   <span className="text-red-400 text-lg group-active:scale-150 transition-transform">❤️</span>
                   <span className="font-sans text-xs font-bold text-stone-400">{post.reactions?.length || 0}</span>
                 </button>
 
-                {/* Reply Toggle */}
                 <button 
                   onClick={() => setActivePostId(activePostId === post.id ? null : post.id)}
                   className="font-sans text-[10px] font-bold uppercase tracking-widest text-stone-400 hover:text-stone-900"
@@ -161,9 +138,8 @@ const handleHeart = async (postId: string) => {
                 </button>
               </div>
 
-              {/* Sliding Comment Section */}
               {activePostId === post.id && (
-                <div className="mt-6 pt-6 border-t border-stone-50 transition-all">
+                <div className="mt-6 pt-6 border-t border-stone-50">
                   <div className="space-y-4 mb-6">
                     {post.comments?.map((comment: any) => (
                       <div key={comment.id} className="bg-stone-50 p-4 rounded-2xl">
@@ -193,5 +169,14 @@ const handleHeart = async (postId: string) => {
         </div>
       </main>
     </div>
+  );
+}
+
+// Wrapping in Suspense for safe builds
+export default function CommunityWall() {
+  return (
+    <Suspense fallback={<div className="p-20 text-center font-sans uppercase tracking-widest text-stone-400">Loading Community...</div>}>
+      <CommunityContent />
+    </Suspense>
   );
 }

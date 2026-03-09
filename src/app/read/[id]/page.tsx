@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from 'react'; // Added Suspense
 import { useParams } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { supabase } from "@lib/supabase";
 import Link from 'next/link';
 
 function ReaderContent() { // Move logic to a child component

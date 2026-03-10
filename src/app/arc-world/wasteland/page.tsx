@@ -2,13 +2,14 @@
 
 import React, { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
+
 import { 
   OrbitControls, 
   Environment, 
   PerspectiveCamera,
   Float,
   ContactShadows,
-  Fog
+
 } from '@react-three/drei';
 import Link from 'next/link';
 import { Skull, Home, AlertTriangle } from 'lucide-react';
@@ -63,7 +64,7 @@ export default function WastelandWorld() {
           <spotLight position={[0, 10, 0]} intensity={1.5} color="#ffffff" angle={0.5} penumbra={1} />
 
           {/* Environmental Effects */}
-          <fog attach="fog" args={['#0a0a0a', 10, 25]} />
+         <fog attach="fog" args={['#444444', 10, 50]} />
           <Environment preset="night" /> 
 
           {/* Scenery */}

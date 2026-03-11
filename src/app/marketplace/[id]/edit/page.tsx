@@ -5,7 +5,6 @@ import { Editor, Frame, Element, useEditor, useNode } from '@craftjs/core';
 import { supabase } from "@lib/supabase";
 import { useParams } from "next/navigation";
 
-
 // ─── TYPES ───────────────────────────────────────────────────────────────────
 type Biz = { id: number; n: string; s: string; a: string; c: string };
 

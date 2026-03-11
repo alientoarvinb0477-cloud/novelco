@@ -39,11 +39,13 @@ export default function ProfilePage() {
 
   const fetchData = async () => {
     if (!user) return;
-    const { data: marketData } = await supabase
+    const { data: marketData, error } = await supabase
       .from("marketplace")
       .select("*")
       .eq("user_id", user.id)
       .order('created_at', { ascending: false });
+    
+    if (error) console.error("Error fetching:", error);
     if (marketData) setMyProducts(marketData);
   };
 
@@ -63,14 +65,22 @@ export default function ProfilePage() {
     if (!error) fetchData();
   };
 
-  // SHARE FUNCTIONALITY
+  // Helper to determine the correct base path based on folder structure
+  const getBasePath = (item: any) => {
+    switch(item.category) {
+      case 'Service': return `/marketplace/services/${item.id}`;
+      case 'Product': return `/marketplace/products/${item.id}`;
+      default: return `/marketplace/${item.id}`; // Default for 'Store'
+    }
+  };
+
   const handleShare = async (item: any) => {
-    const url = `${window.location.origin}/marketplace/${item.id}`;
+    const url = `${window.location.origin}${getBasePath(item)}`;
     if (navigator.share) {
       try {
         await navigator.share({
           title: item.name,
-          text: `Check out ${item.name}'s store on NovelArchStudio!`,
+          text: `Check out ${item.name} on NovelArchStudio!`,
           url: url,
         });
       } catch (err) {
@@ -78,7 +88,7 @@ export default function ProfilePage() {
       }
     } else {
       navigator.clipboard.writeText(url);
-      alert("Store link copied to clipboard!");
+      alert("Link copied to clipboard!");
     }
   };
 
@@ -210,24 +220,18 @@ export default function ProfilePage() {
                 </div>
                 
                 <div className="flex flex-col gap-3 mt-auto">
-                  {/* EDIT BUTTON: Fixed to route correctly to [id]/edit */}
+                  {/* EDIT BUTTON: Now uses getBasePath + /edit */}
                   <Link 
-                    href={
-                      item.category === 'Service' 
-                        ? `/marketplace/services/${item.id}/edit` 
-                        : item.category === 'Store' 
-                          ? `/marketplace/${item.id}/edit` 
-                          : `/marketplace/products/${item.id}/edit`
-                    } 
+                    href={`${getBasePath(item)}/edit`}
                     className="w-full flex items-center justify-center gap-2 bg-stone-900 text-white py-4 rounded-2xl text-[10px] font-sans font-bold uppercase tracking-widest hover:bg-orange-700 transition-all"
                   >
                     <Layout size={12} /> Edit {item.category === 'Store' ? 'Store Design' : 'Configuration'}
                   </Link>
 
                   <div className="flex gap-2">
-                    {/* VISIT STORE BUTTON: Takes users to the actual store page */}
+                    {/* VIEW WEBPAGE BUTTON: Uses correct dynamic base path */}
                     <Link 
-                      href={`/marketplace/${item.id}`} 
+                      href={getBasePath(item)} 
                       target="_blank" 
                       className="flex-1 flex items-center justify-center border border-stone-200 py-4 rounded-2xl text-[10px] font-sans font-bold uppercase tracking-widest text-stone-400 hover:text-stone-900 transition-all gap-2"
                     >

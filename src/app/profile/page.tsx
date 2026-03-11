@@ -165,7 +165,7 @@ export default function ProfilePage() {
                 </Link>
               ) : (
                 <div className="bg-stone-100 text-stone-300 px-8 py-4 rounded-2xl font-sans text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 cursor-not-allowed">
-                  <ShieldCheck size={14} /> Store Active
+                  <ShieldCheck size={14} /> Manage Store
                 </div>
               )}
             </div>

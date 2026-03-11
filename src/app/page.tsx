@@ -21,7 +21,7 @@ export default function Home() {
       <nav className="border-b border-stone-200 bg-white/80 backdrop-blur-md sticky top-0 z-50">
         <div className="flex justify-between items-center px-6 md:px-8 py-5">
           {/* Logo */}
-          <div className="text-2xl font-bold tracking-tighter">NovelArcStudio</div>
+          <div className="text-2xl font-bold tracking-tighter">NovelArc.Studio</div>
 
           {/* Desktop Links (Hidden on Mobile) */}
           <div className="hidden md:flex space-x-8 text-xs font-bold font-sans uppercase tracking-widest text-stone-400">

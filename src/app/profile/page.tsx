@@ -17,7 +17,8 @@ import {
   ShieldCheck,
   Heart,
   Coffee,
-  Sparkles
+  Sparkles,
+  Share2
 } from "lucide-react";
 import InstructionBox from "@/components/ui/instruction-box"; 
 
@@ -27,7 +28,6 @@ export default function ProfilePage() {
   const [myProducts, setMyProducts] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<"stories" | "marketplace" | "hero">("hero");
 
-  // Mock Hero Stats - In a production app, these would be fetched from Supabase
   const [heroStats] = useState({
     name: "Architect Prime",
     health: 85,
@@ -63,6 +63,24 @@ export default function ProfilePage() {
     if (!error) fetchData();
   };
 
+  const handleShare = async (item: any) => {
+    const url = `${window.location.origin}/marketplace/${item.id}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: item.name,
+          text: `Check out ${item.name} on NovelArchStudio`,
+          url: url,
+        });
+      } catch (err) {
+        console.log("Error sharing", err);
+      }
+    } else {
+      navigator.clipboard.writeText(url);
+      alert("Link copied to clipboard!");
+    }
+  };
+
   if (!isLoaded || !user) return <div className="p-20 text-center font-sans uppercase tracking-widest text-stone-400">Loading Profile...</div>;
 
   return (
@@ -82,7 +100,7 @@ export default function ProfilePage() {
         </div>
       </nav>
 
-      {/* --- MY ARCHERO VIEW --- */}
+      {/* --- HERO VIEW --- */}
       {activeTab === "hero" && (
         <div className="max-w-4xl mx-auto">
           <div className="bg-white rounded-[3rem] border border-stone-100 p-12 shadow-xl flex flex-col md:flex-row gap-12 items-center">
@@ -140,7 +158,7 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {/* --- STORIES & MARKETPLACE VIEWS --- */}
+      {/* --- MARKETPLACE HEADER --- */}
       {activeTab === "marketplace" && <InstructionBox type="image" />}
 
       {activeTab !== "hero" && (
@@ -173,6 +191,7 @@ export default function ProfilePage() {
         </header>
       )}
 
+      {/* --- PRODUCTS GRID --- */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {activeTab === "marketplace" && myProducts.map((item) => (
           <div key={item.id} className={`p-8 rounded-[2.5rem] border shadow-sm flex flex-col group relative ${item.category === 'Store' ? 'bg-orange-50/30 border-orange-100 ring-2 ring-orange-200' : 'bg-white border-stone-100'}`}>
@@ -182,7 +201,7 @@ export default function ProfilePage() {
 
             <div className="aspect-video bg-stone-50 rounded-2xl flex items-center justify-center text-5xl mb-6 overflow-hidden relative group/img">
               {item.image_url?.startsWith('http') ? (
-                <img src={item.image_url} className="w-full h-full object-cover" />
+                <img src={item.image_url} className="w-full h-full object-cover" alt={item.name} />
               ) : <span>{item.image_url || "📦"}</span>}
               <button onClick={() => handleUpdateImageUrl(item.id)} className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-[10px] font-bold uppercase">
                 <LinkIcon size={20} className="mb-2" /> Update Image
@@ -198,26 +217,34 @@ export default function ProfilePage() {
             </div>
             
             <div className="flex flex-col gap-3 mt-auto">
-         
-              
+              {/* FIXED EDIT LINK: Matches your [id]/edit folder structure */}
               <Link 
                 href={
-  item.category === 'Service' 
-    ? `/marketplace/services/${item.id}/edit` 
-    : item.category === 'Store' 
-      ? `/marketplace/${item.id}/edit` // Changed from /marketplace/edit/${item.id}
-      : `/marketplace/products/${item.id}/edit`
-}
+                  item.category === 'Service' 
+                    ? `/marketplace/services/${item.id}/edit` 
+                    : item.category === 'Store' 
+                      ? `/marketplace/${item.id}/edit` 
+                      : `/marketplace/products/${item.id}/edit`
+                } 
                 className="w-full flex items-center justify-center gap-2 bg-stone-900 text-white py-4 rounded-2xl text-[10px] font-sans font-bold uppercase tracking-widest hover:bg-orange-700 transition-all"
               >
                 <Layout size={12} /> Edit {item.category === 'Store' ? 'Store Design' : 'Configuration'}
               </Link>
 
+              <div className="flex gap-2">
+                {/* VISIT STORE: Points to [id] page */}
+                <Link href={`/marketplace/${item.id}`} target="_blank" className="flex-1 flex items-center justify-center border border-stone-200 py-4 rounded-2xl text-[10px] font-sans font-bold uppercase tracking-widest text-stone-400 hover:text-stone-900 transition-all gap-2">
+                  <ExternalLink size={12} /> Visit Store
+                </Link>
 
-              
-              <Link href={`/marketplace/${item.id}`} target="_blank" className="w-full flex items-center justify-center border border-stone-200 py-4 rounded-2xl text-[10px] font-sans font-bold uppercase tracking-widest text-stone-400 hover:text-stone-900 transition-all gap-2">
-                <ExternalLink size={12} /> Visit Store
-              </Link>
+                {/* SHARE BUTTON */}
+                <button 
+                  onClick={() => handleShare(item)}
+                  className="px-4 border border-stone-200 rounded-2xl text-stone-400 hover:text-orange-700 hover:border-orange-200 transition-all flex items-center justify-center"
+                >
+                  <Share2 size={14} />
+                </button>
+              </div>
             </div>
           </div>
         ))}

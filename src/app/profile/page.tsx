@@ -123,7 +123,7 @@ export default function ProfilePage() {
       try {
         await navigator.share({
           title: item.name,
-          text: `Check out ${item.name} on NovelArchStudio!`,
+          text: `Check out ${item.name} on NovelArc.Studio!`,
           url: url,
         });
       } catch (err) { console.log("Error sharing:", err); }

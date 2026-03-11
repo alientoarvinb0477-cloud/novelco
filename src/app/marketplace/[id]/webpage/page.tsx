@@ -5,11 +5,23 @@ import { supabase } from "@lib/supabase";
 import { useParams } from "next/navigation";
 import { Editor, Frame, Element } from "@craftjs/core";
 
-// --- IMPORTANT: IMPORT YOUR DESIGN COMPONENTS ---
-// Ensure these match the components used in your builder
-import { Container } from "@/components/editor/Container"; 
-import { Text } from "@/components/editor/Text";
-// --------------------------------------------------
+// --- INTERNAL FALLBACK COMPONENTS (Prevents "Module Not Found" Error) ---
+const Container = ({ children, background, padding = 20, ...props }: any) => {
+  return (
+    <div {...props} style={{ background, padding: `${padding}px` }}>
+      {children}
+    </div>
+  );
+};
+
+const Text = ({ text, fontSize, fontWeight, color, ...props }: any) => {
+  return (
+    <p {...props} style={{ fontSize: `${fontSize}px`, fontWeight, color }}>
+      {text}
+    </p>
+  );
+};
+// -----------------------------------------------------------------------
 
 export default function UserPublishedWebpage() {
   const { id } = useParams();
@@ -21,7 +33,6 @@ export default function UserPublishedWebpage() {
     const fetchPublishedSite = async () => {
       if (!id) return;
       
-      // Fetch store details and the published configuration from Supabase
       const { data, error } = await supabase
         .from("marketplace")
         .select("*")
@@ -32,8 +43,6 @@ export default function UserPublishedWebpage() {
         console.error("Error fetching published site:", error);
       } else if (data) {
         setStoreData(data);
-        
-        // Craft.js requires the JSON configuration as a string
         if (data.config_published) {
           const config = typeof data.config_published === "string" 
             ? data.config_published 
@@ -47,23 +56,14 @@ export default function UserPublishedWebpage() {
     fetchPublishedSite();
   }, [id]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FDFCFB]">
-        <div className="font-sans text-[10px] font-bold uppercase tracking-[0.3em] text-stone-400 animate-pulse">
-          Loading Store Experience...
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <div className="min-h-screen flex items-center justify-center font-sans text-stone-400 uppercase tracking-widest">Loading Store...</div>;
 
-  // Fallback if no configuration is found
   if (!publishedConfig) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FDFCFB]">
         <div className="text-center">
-          <h1 className="text-4xl font-bold mb-4">Welcome to {storeData?.name || "the Store"}</h1>
-          <p className="text-stone-500 italic">This owner hasn't published their design yet.</p>
+          <h1 className="text-4xl font-bold mb-4">{storeData?.name || "The Store"}</h1>
+          <p className="text-stone-500 italic">No custom design has been published yet.</p>
         </div>
       </div>
     );
@@ -71,27 +71,11 @@ export default function UserPublishedWebpage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* enabled={false} renders the JSON but disables editing tools */}
-      <Editor
-        enabled={false}
-        resolver={{
-          Container,
-          Text,
-        }}
-      >
+      <Editor enabled={false} resolver={{ Container, Text }}>
         <Frame data={publishedConfig}>
-          {/* The root element where user content (like NOVELCO OS) is injected */}
-          <Element is={Container} canvas>
-            {/* Saved nodes render here */}
-          </Element>
+          <Element is={Container} canvas />
         </Frame>
       </Editor>
-
-      <footer className="py-10 text-center border-t border-stone-100 bg-stone-50">
-        <p className="font-sans text-[9px] font-bold uppercase tracking-widest text-stone-400">
-          Powered by NovelArchStudio • {storeData?.business}
-        </p>
-      </footer>
     </div>
   );
 }

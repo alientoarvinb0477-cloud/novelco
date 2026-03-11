@@ -28,14 +28,14 @@ export default function MarketplaceExplore() {
     fetchMarketplace();
   }, []);
 
-  // UPDATED: Now routes directly to the /webpage subfolder for a custom view
+  // UPDATED: Routes to your NEW product-details folder
   const handleCardClick = (itemId: string) => {
-    router.push(`/marketplace/${itemId}/webpage`);
+    router.push(`/marketplace/${itemId}/product-details`);
   };
 
   const filteredItems = items.filter(item => {
     const matchesSearch = item.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         item.business?.toLowerCase().includes(searchQuery.toLowerCase());
+                          item.business?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = activeCategory === "All" || item.category === activeCategory;
     return matchesSearch && matchesCategory;
   });
@@ -61,9 +61,8 @@ export default function MarketplaceExplore() {
           <span className="font-sans text-[10px] font-bold uppercase tracking-widest">Back to Home</span>
         </button>
         
-        {/* UPDATED: "Visit Webpage" navigation button */}
         <button 
-          onClick={() => router.push('/profile')} // Or wherever your personal store dashboard is
+          onClick={() => router.push('/profile')}
           className="flex items-center gap-2 font-sans text-[10px] font-bold uppercase tracking-widest bg-stone-900 text-white px-6 py-3 rounded-full hover:bg-orange-700 transition-all shadow-lg"
         >
           <Globe size={14} /> My Workspace
@@ -73,7 +72,7 @@ export default function MarketplaceExplore() {
       <div className="max-w-6xl mx-auto">
         <header className="mb-12">
           <h1 className="text-6xl font-bold mb-4 tracking-tight">Explore</h1>
-          <p className="text-stone-400 text-xl italic mb-8">Discover unique digital worlds and professional services.</p>
+          <p className="text-stone-400 text-xl italic mb-8">Click an item to view full product details.</p>
           
           <InstructionBox type="product" />
           
@@ -82,23 +81,10 @@ export default function MarketplaceExplore() {
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-300" size={18} />
               <input 
                 className="w-full bg-white border border-stone-100 p-5 pl-12 rounded-2xl outline-none shadow-sm font-sans"
-                placeholder="Search products, brands, or services..."
+                placeholder="Search..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-            </div>
-            <div className="flex gap-2 p-1 bg-stone-100 rounded-2xl overflow-x-auto">
-              {["All", "Store", "Product", "Service"].map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setActiveCategory(cat)}
-                  className={`px-6 py-3 rounded-xl font-sans text-[10px] font-bold uppercase tracking-widest transition-all whitespace-nowrap ${
-                    activeCategory === cat ? "bg-white text-stone-900 shadow-sm" : "text-stone-400"
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
             </div>
           </div>
         </header>
@@ -108,11 +94,11 @@ export default function MarketplaceExplore() {
           {filteredItems.map((item) => (
             <div 
               key={item.id} 
-              // UPDATED: Click handler now sends user to the /webpage subfolder
               onClick={() => handleCardClick(item.id)}
               className="bg-white rounded-[2.5rem] border border-stone-100 p-8 flex flex-col group cursor-pointer hover:shadow-2xl hover:-translate-y-1 transition-all duration-500"
             >
-              <div className="aspect-video bg-stone-50 rounded-2xl mb-6 overflow-hidden relative">
+              {/* IMAGE CONTAINER */}
+              <div className="aspect-video bg-stone-50 rounded-2xl mb-6 overflow-hidden relative border border-stone-50">
                 {item.image_url?.startsWith('http') ? (
                   <img 
                     src={item.image_url} 
@@ -124,8 +110,12 @@ export default function MarketplaceExplore() {
                     {item.category === 'Service' ? <Wrench /> : item.category === 'Store' ? <Store /> : <Package />}
                   </div>
                 )}
-                <div className="absolute top-4 right-4 bg-white/90 px-3 py-1 rounded-full text-[8px] font-bold uppercase tracking-widest shadow-sm">
-                  {item.category}
+                
+                {/* Overlay that appears on hover to signal clickability */}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors flex items-center justify-center">
+                   <span className="opacity-0 group-hover:opacity-100 bg-white/90 px-4 py-2 rounded-full font-sans text-[8px] font-bold uppercase tracking-widest shadow-sm transition-opacity">
+                     View Details
+                   </span>
                 </div>
               </div>
 
@@ -137,20 +127,14 @@ export default function MarketplaceExplore() {
                   <div className="text-stone-900 font-sans font-bold text-lg">
                     {item.price === "0" || !item.price ? "Free" : `₱${item.price}`}
                   </div>
-                  <div className="text-orange-700 font-sans text-[9px] font-bold uppercase tracking-widest flex items-center gap-1">
-                    Visit Webpage →
+                  <div className="text-orange-700 font-sans text-[9px] font-bold uppercase tracking-widest">
+                    Details →
                   </div>
                 </div>
               </div>
             </div>
           ))}
         </div>
-
-        {filteredItems.length === 0 && (
-          <div className="py-20 text-center">
-            <p className="font-serif italic text-stone-300 text-xl">No results found for "{searchQuery}"</p>
-          </div>
-        )}
       </div>
     </div>
   );

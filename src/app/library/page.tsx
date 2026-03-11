@@ -30,7 +30,7 @@ export default function LibraryPage() {
   return (
     <div className="min-h-screen bg-[#FDFCFB] text-stone-900 font-serif">
       <nav className="flex justify-between items-center px-8 py-6 border-b border-stone-100 bg-white/50 backdrop-blur-md sticky top-0 z-50">
-        <Link href="/" className="text-2xl font-bold tracking-tighter">NovelCo.</Link>
+        <Link href="/" className="text-2xl font-bold tracking-tighter">NovelArc.Studio</Link>
         <UserButton />
       </nav>
 

@@ -18,12 +18,13 @@ import {
   Heart,
   Coffee,
   Sparkles,
-  Share2
+  Share2,
+  Lock
 } from "lucide-react";
 import InstructionBox from "@/components/ui/instruction-box"; 
 
 export default function ProfilePage() {
-  const { user, isLoaded } = useUser();
+  const { user, isLoaded, isSignedIn } = useUser();
   const router = useRouter();
   const [myProducts, setMyProducts] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<"stories" | "marketplace" | "hero">("hero");
@@ -49,8 +50,50 @@ export default function ProfilePage() {
     if (marketData) setMyProducts(marketData);
   };
 
-  useEffect(() => { if (user) fetchData(); }, [user]);
+  useEffect(() => { 
+    if (isSignedIn && user) fetchData(); 
+  }, [isSignedIn, user]);
 
+  // --- 1. AUTHENTICATION GATE ---
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#FDFCFB]">
+        <div className="font-sans text-[10px] font-bold uppercase tracking-widest text-stone-400 animate-pulse">
+          Syncing Profile...
+        </div>
+      </div>
+    );
+  }
+
+  // This is the condition you requested: if not signed in, show this screen
+  if (!isSignedIn || !user) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#FDFCFB] p-8">
+        <div className="bg-white p-12 rounded-[3rem] border border-stone-100 shadow-xl text-center max-w-md">
+          <div className="w-20 h-20 bg-stone-50 rounded-3xl flex items-center justify-center mx-auto mb-8 text-stone-300">
+            <Lock size={40} />
+          </div>
+          <h1 className="text-4xl font-bold tracking-tight mb-4 text-stone-900">Sign In Required</h1>
+          <p className="text-stone-400 italic mb-10 leading-relaxed">
+            You must be logged in to manage your marketplace items, view drafts, and sustain your ArcHero.
+          </p>
+          <div className="flex flex-col gap-3">
+             <button 
+               onClick={() => router.push('/sign-in')}
+               className="bg-stone-900 text-white py-4 px-8 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest hover:bg-orange-700 transition-all shadow-lg"
+             >
+               Go to Sign In
+             </button>
+             <Link href="/" className="text-stone-400 font-sans text-[10px] font-bold uppercase tracking-widest hover:text-stone-900 py-2">
+               Return to Home
+             </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // --- 2. ACTION HANDLERS ---
   const handleUpdateImageUrl = async (itemId: string) => {
     const newUrl = window.prompt("IMAGE URL UPLOAD:\n1. Copy Image Address\n2. Paste here:");
     if (newUrl && newUrl.trim().startsWith('http')) {
@@ -65,17 +108,17 @@ export default function ProfilePage() {
     if (!error) fetchData();
   };
 
-  // Helper to determine the correct base path based on folder structure
   const getBasePath = (item: any) => {
     switch(item.category) {
       case 'Service': return `/marketplace/services/${item.id}`;
       case 'Product': return `/marketplace/products/${item.id}`;
-      default: return `/marketplace/${item.id}`; // Default for 'Store'
+      default: return `/marketplace/${item.id}`; 
     }
   };
 
   const handleShare = async (item: any) => {
-    const url = `${window.location.origin}${getBasePath(item)}`;
+    // Shared link points directly to the custom webpage
+    const url = `${window.location.origin}/marketplace/${item.id}/webpage`;
     if (navigator.share) {
       try {
         await navigator.share({
@@ -83,31 +126,27 @@ export default function ProfilePage() {
           text: `Check out ${item.name} on NovelArchStudio!`,
           url: url,
         });
-      } catch (err) {
-        console.log("Error sharing:", err);
-      }
+      } catch (err) { console.log("Error sharing:", err); }
     } else {
       navigator.clipboard.writeText(url);
-      alert("Link copied to clipboard!");
+      alert("Store link copied to clipboard!");
     }
   };
-
-  if (!isLoaded || !user) return <div className="p-20 text-center font-sans uppercase tracking-widest text-stone-400">Loading Profile...</div>;
 
   return (
     <div className="min-h-screen bg-[#FDFCFB] text-stone-900 font-serif p-12">
       <nav className="mb-20 flex justify-between items-center">
         <Link href="/" className="text-xl font-bold tracking-tighter hover:text-orange-700">NovelArchStudio</Link>
         <div className="flex gap-4">
-           <button onClick={() => setActiveTab("hero")} className={`px-6 py-2 rounded-full font-sans text-[10px] font-bold uppercase tracking-widest transition-all ${activeTab === "hero" ? "bg-orange-700 text-white" : "bg-white text-stone-400 border border-stone-100"}`}>
-             <Sparkles size={12} className="inline mr-2"/> MyArcHero
-           </button>
-           <button onClick={() => setActiveTab("stories")} className={`px-6 py-2 rounded-full font-sans text-[10px] font-bold uppercase tracking-widest transition-all ${activeTab === "stories" ? "bg-stone-900 text-white" : "bg-white text-stone-400 border border-stone-100"}`}>
-             <BookOpen size={12} className="inline mr-2"/> Stories
-           </button>
-           <button onClick={() => setActiveTab("marketplace")} className={`px-6 py-2 rounded-full font-sans text-[10px] font-bold uppercase tracking-widest transition-all ${activeTab === "marketplace" ? "bg-stone-900 text-white" : "bg-white text-stone-400 border border-stone-100"}`}>
-             <Package size={12} className="inline mr-2"/> Marketplace
-           </button>
+            <button onClick={() => setActiveTab("hero")} className={`px-6 py-2 rounded-full font-sans text-[10px] font-bold uppercase tracking-widest transition-all ${activeTab === "hero" ? "bg-orange-700 text-white" : "bg-white text-stone-400 border border-stone-100"}`}>
+              <Sparkles size={12} className="inline mr-2"/> MyArcHero
+            </button>
+            <button onClick={() => setActiveTab("stories")} className={`px-6 py-2 rounded-full font-sans text-[10px] font-bold uppercase tracking-widest transition-all ${activeTab === "stories" ? "bg-stone-900 text-white" : "bg-white text-stone-400 border border-stone-100"}`}>
+              <BookOpen size={12} className="inline mr-2"/> Stories
+            </button>
+            <button onClick={() => setActiveTab("marketplace")} className={`px-6 py-2 rounded-full font-sans text-[10px] font-bold uppercase tracking-widest transition-all ${activeTab === "marketplace" ? "bg-stone-900 text-white" : "bg-white text-stone-400 border border-stone-100"}`}>
+              <Package size={12} className="inline mr-2"/> Marketplace
+            </button>
         </div>
       </nav>
 
@@ -220,7 +259,6 @@ export default function ProfilePage() {
                 </div>
                 
                 <div className="flex flex-col gap-3 mt-auto">
-                  {/* EDIT BUTTON: Now uses getBasePath + /edit */}
                   <Link 
                     href={`${getBasePath(item)}/edit`}
                     className="w-full flex items-center justify-center gap-2 bg-stone-900 text-white py-4 rounded-2xl text-[10px] font-sans font-bold uppercase tracking-widest hover:bg-orange-700 transition-all"
@@ -229,16 +267,14 @@ export default function ProfilePage() {
                   </Link>
 
                   <div className="flex gap-2">
-                    {/* VIEW WEBPAGE BUTTON: Uses correct dynamic base path */}
-<Link 
-  href={`/marketplace/${item.id}/webpage`}
-  target="_blank" 
-  className="flex-1 flex items-center justify-center border border-stone-200 py-4 rounded-2xl text-[10px] font-sans font-bold uppercase tracking-widest text-stone-400 hover:text-stone-900 transition-all gap-2"
->
-  <ExternalLink size={12} /> View Webpage
-</Link>
+                    <Link 
+                      href={`/marketplace/${item.id}/webpage`}
+                      target="_blank" 
+                      className="flex-1 flex items-center justify-center border border-stone-200 py-4 rounded-2xl text-[10px] font-sans font-bold uppercase tracking-widest text-stone-400 hover:text-stone-900 transition-all gap-2"
+                    >
+                      <ExternalLink size={12} /> View Webpage
+                    </Link>
 
-                    {/* SHARE BUTTON */}
                     <button 
                       onClick={() => handleShare(item)}
                       className="px-5 border border-stone-200 rounded-2xl text-stone-400 hover:text-orange-700 hover:border-orange-200 transition-all flex items-center justify-center"

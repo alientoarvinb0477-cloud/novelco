@@ -73,10 +73,11 @@ export default function MarketplaceExplore() {
         </button>
         
         <button 
-          onClick={() => router.push('/profile')}
+          onClick={() => router.push(`/marketplace/${item.id}/webpage`)}
+          
           className="font-sans text-[10px] font-bold uppercase tracking-widest bg-stone-900 text-white px-6 py-3 rounded-full hover:bg-orange-700 transition-all shadow-lg"
         >
-          My Workspace
+          Visit Store Webpage
         </button>
       </div>
 

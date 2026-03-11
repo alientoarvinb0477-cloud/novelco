@@ -230,13 +230,13 @@ export default function ProfilePage() {
 
                   <div className="flex gap-2">
                     {/* VIEW WEBPAGE BUTTON: Uses correct dynamic base path */}
-                    <Link 
-                      href={getBasePath(item)} 
-                      target="_blank" 
-                      className="flex-1 flex items-center justify-center border border-stone-200 py-4 rounded-2xl text-[10px] font-sans font-bold uppercase tracking-widest text-stone-400 hover:text-stone-900 transition-all gap-2"
-                    >
-                      <ExternalLink size={12} /> View Webpage
-                    </Link>
+<Link 
+  href={`/marketplace/${item.id}`} 
+  target="_blank" 
+  className="flex-1 flex items-center justify-center border border-stone-200 py-4 rounded-2xl text-[10px] font-sans font-bold uppercase tracking-widest text-stone-400 hover:text-stone-900 transition-all gap-2"
+>
+  <ExternalLink size={12} /> View Webpage
+</Link>
 
                     {/* SHARE BUTTON */}
                     <button 

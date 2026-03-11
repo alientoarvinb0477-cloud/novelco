@@ -198,12 +198,23 @@ export default function ProfilePage() {
             </div>
             
             <div className="flex flex-col gap-3 mt-auto">
+         
+              
               <Link 
-                href={item.category === 'Service' ? `/marketplace/services/${item.id}/edit` : item.category === 'Store' ? `/marketplace/edit/${item.id}` : `/marketplace/products/${item.id}/edit`} 
+                href={
+  item.category === 'Service' 
+    ? `/marketplace/services/${item.id}/edit` 
+    : item.category === 'Store' 
+      ? `/marketplace/${item.id}/edit` // Changed from /marketplace/edit/${item.id}
+      : `/marketplace/products/${item.id}/edit`
+}
                 className="w-full flex items-center justify-center gap-2 bg-stone-900 text-white py-4 rounded-2xl text-[10px] font-sans font-bold uppercase tracking-widest hover:bg-orange-700 transition-all"
               >
                 <Layout size={12} /> Edit {item.category === 'Store' ? 'Store Design' : 'Configuration'}
               </Link>
+
+
+              
               <Link href={`/marketplace/${item.id}`} target="_blank" className="w-full flex items-center justify-center border border-stone-200 py-4 rounded-2xl text-[10px] font-sans font-bold uppercase tracking-widest text-stone-400 hover:text-stone-900 transition-all gap-2">
                 <ExternalLink size={12} /> Visit Store
               </Link>

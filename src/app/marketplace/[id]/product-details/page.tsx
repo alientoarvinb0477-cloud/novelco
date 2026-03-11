@@ -124,30 +124,7 @@ export default function ProductDetailsPage() {
             </div>
           </div>
 
-<div className="flex flex-col sm:flex-row gap-4">
-  {/* Acquire / Buy Button */}
-  <button className="flex-1 bg-stone-900 text-white py-6 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest hover:bg-orange-700 transition-all shadow-xl flex items-center justify-center gap-3 group">
-    <ShoppingBag size={16} className="group-hover:scale-110 transition-transform" />
-    Acquire Now
-  </button>
 
-  {/* UPDATED: Visit Store Button */}
-  <button 
-    onClick={() => {
-      if (item.webpage_url) {
-        // If the owner has an external URL (e.g., https://their-site.com)
-        window.open(item.webpage_url, '_blank', 'noopener,noreferrer');
-      } else {
-        // Fallback to your internal marketplace subfolder if no URL is provided
-        router.push(`/marketplace/${id}/webpage`);
-      }
-    }}
-    className="px-8 bg-white border border-stone-200 text-stone-900 py-6 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest hover:bg-stone-50 transition-all shadow-sm flex items-center gap-2"
-  >
-    <Globe size={14} />
-    Visit Store
-  </button>
-</div>
         </div>
       </main>
     </div>

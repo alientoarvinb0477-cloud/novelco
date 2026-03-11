@@ -177,8 +177,15 @@ export default function Marketplace() {
                     <div className="flex gap-2 mb-6">
                       <Link 
                         href={`/marketplace/${product.id}`}
-                        className="flex-1 flex items-center justify-center gap-2 border border-stone-200 py-3 rounded-xl text-[10px] font-sans font-bold uppercase tracking-widest hover:bg-stone-50 transition-all"
-                      >
+          href={
+    item.category === 'Product' 
+      ? `/marketplace/products/${item.id}` 
+      : item.category === 'Service' 
+        ? `/marketplace/services/${item.id}` 
+        : `/marketplace/${item.id}` // Default for 'Store'
+  }
+  className="group bg-white rounded-[2.5rem] border border-stone-100 p-2 overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all duration-500"
+>
                         <ExternalLink size={12} /> View Page
                       </Link>
                       

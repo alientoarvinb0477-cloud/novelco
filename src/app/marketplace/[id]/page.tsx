@@ -1,161 +1,261 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 import { supabase } from "@lib/supabase";
-import { useRouter } from "next/navigation"; 
-import { Search, Store, Package, Wrench, ArrowLeft } from "lucide-react";
-import InstructionBox from "@/components/ui/instruction-box";
+import { useUser } from "@clerk/nextjs";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { 
+  ExternalLink, 
+  Package, 
+  BookOpen, 
+  Layout, 
+  Store, 
+  Trash2, 
+  Wrench, 
+  Link as LinkIcon,
+  ShieldCheck,
+  Heart,
+  Coffee,
+  Sparkles,
+  Share2
+} from "lucide-react";
+import InstructionBox from "@/components/ui/instruction-box"; 
 
-export default function MarketplaceExplore() {
+export default function ProfilePage() {
+  const { user, isLoaded } = useUser();
   const router = useRouter();
-  const [items, setItems] = useState<any[]>([]);
-  const [stores, setStores] = useState<Record<string, string>>({}); 
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeCategory, setActiveCategory] = useState("All");
+  const [myProducts, setMyProducts] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<"stories" | "marketplace" | "hero">("hero");
 
-  useEffect(() => {
-    const fetchMarketplace = async () => {
-      const { data } = await supabase
-        .from("marketplace")
-        .select("*")
-        .order('created_at', { ascending: false });
-
-      if (data) {
-        setItems(data);
-        const storeMap: Record<string, string> = {};
-        data.forEach(item => {
-          // Map user_id to their specific Store entry ID
-          if (item.category?.toLowerCase() === 'store') {
-            storeMap[String(item.user_id)] = item.id;
-          }
-        });
-        setStores(storeMap);
-      }
-      setLoading(false);
-    };
-    fetchMarketplace();
-  }, []);
-
-  const handleCardClick = (userId: string, itemId: string, category: string) => {
-    const ownerStoreId = stores[String(userId)];
-    // Redirects to the designer store ID if available, otherwise fallback to the item ID
-    const targetId = category?.toLowerCase() === 'store' ? itemId : (ownerStoreId || itemId);
-    router.push(`/marketplace/${targetId}`);
-  };
-
-  const filteredItems = items.filter(item => {
-    const matchesSearch = item.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         item.business?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = activeCategory === "All" || item.category === activeCategory;
-    return matchesSearch && matchesCategory;
+  const [heroStats] = useState({
+    name: "Architect Prime",
+    health: 85,
+    hunger: 40,
+    level: 1
   });
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-[#FDFCFB]">
-      <div className="p-24 text-center font-sans text-[10px] uppercase tracking-widest text-stone-400 animate-pulse">
-        Loading Explore...
-      </div>
-    </div>
-  );
+  const hasExistingStore = myProducts.some(item => item.category === 'Store');
+
+  const fetchData = async () => {
+    if (!user) return;
+    const { data: marketData } = await supabase
+      .from("marketplace")
+      .select("*")
+      .eq("user_id", user.id)
+      .order('created_at', { ascending: false });
+    if (marketData) setMyProducts(marketData);
+  };
+
+  useEffect(() => { if (user) fetchData(); }, [user]);
+
+  const handleUpdateImageUrl = async (itemId: string) => {
+    const newUrl = window.prompt("IMAGE URL UPLOAD:\n1. Copy Image Address\n2. Paste here:");
+    if (newUrl && newUrl.trim().startsWith('http')) {
+      await supabase.from("marketplace").update({ image_url: newUrl.trim() }).eq('id', itemId);
+      fetchData();
+    }
+  };
+
+  const handleDeleteItem = async (id: string) => {
+    if (!confirm("Are you sure?")) return;
+    const { error } = await supabase.from("marketplace").delete().eq("id", id);
+    if (!error) fetchData();
+  };
+
+  // SHARE FUNCTIONALITY
+  const handleShare = async (item: any) => {
+    const url = `${window.location.origin}/marketplace/${item.id}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: item.name,
+          text: `Check out ${item.name}'s store on NovelArchStudio!`,
+          url: url,
+        });
+      } catch (err) {
+        console.log("Error sharing:", err);
+      }
+    } else {
+      navigator.clipboard.writeText(url);
+      alert("Store link copied to clipboard!");
+    }
+  };
+
+  if (!isLoaded || !user) return <div className="p-20 text-center font-sans uppercase tracking-widest text-stone-400">Loading Profile...</div>;
 
   return (
-    <div className="min-h-screen bg-[#FDFCFB] text-stone-900 font-serif p-8 md:p-12 relative">
-      
-      {/* --- NAVIGATION: FLOATING BACK BUTTON --- */}
-      <div className="max-w-6xl mx-auto mb-12 flex justify-between items-center">
-        <button 
-          onClick={() => router.push('/')}
-          className="flex items-center gap-2 text-stone-400 hover:text-stone-900 transition-colors group"
-        >
-          <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-          <span className="font-sans text-[10px] font-bold uppercase tracking-widest">Back to Home</span>
-        </button>
-        
-        <button 
-          onClick={() => router.push('/profile')}
-          className="font-sans text-[10px] font-bold uppercase tracking-widest bg-stone-900 text-white px-6 py-3 rounded-full hover:bg-orange-700 transition-all shadow-lg"
-        >
-          My Workspace
-        </button>
-      </div>
-
-      <div className="max-w-6xl mx-auto">
-        <header className="mb-12">
-          <h1 className="text-6xl font-bold mb-4 tracking-tight">Explore</h1>
-          <p className="text-stone-400 text-xl italic mb-8">Discover unique digital worlds and professional services.</p>
-          
-          <InstructionBox type="product" />
-          
-          <div className="flex flex-col md:flex-row gap-4 mt-8">
-            <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-300" size={18} />
-              <input 
-                className="w-full bg-white border border-stone-100 p-5 pl-12 rounded-2xl outline-none shadow-sm font-sans"
-                placeholder="Search products, brands, or services..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <div className="flex gap-2 p-1 bg-stone-100 rounded-2xl overflow-x-auto">
-              {["All", "Store", "Product", "Service"].map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setActiveCategory(cat)}
-                  className={`px-6 py-3 rounded-xl font-sans text-[10px] font-bold uppercase tracking-widest transition-all whitespace-nowrap ${
-                    activeCategory === cat ? "bg-white text-stone-900 shadow-sm" : "text-stone-400"
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-          </div>
-        </header>
-
-        {/* --- MARKETPLACE GRID --- */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {filteredItems.map((item) => (
-            <div 
-              key={item.id} 
-              onClick={() => handleCardClick(item.user_id, item.id, item.category)}
-              className="bg-white rounded-[2.5rem] border border-stone-100 p-8 flex flex-col group cursor-pointer hover:shadow-2xl hover:-translate-y-1 transition-all duration-500"
-            >
-              <div className="aspect-video bg-stone-50 rounded-2xl mb-6 overflow-hidden relative">
-                {item.image_url?.startsWith('http') ? (
-                  <img 
-                    src={item.image_url} 
-                    alt={item.name} 
-                    className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-700" 
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-4xl text-stone-200">
-                    {item.category === 'Service' ? <Wrench /> : item.category === 'Store' ? <Store /> : <Package />}
-                  </div>
-                )}
-                <div className="absolute top-4 right-4 bg-white/90 px-3 py-1 rounded-full text-[8px] font-bold uppercase tracking-widest shadow-sm">
-                  {item.category}
-                </div>
-              </div>
-
-              <div className="mb-2">
-                <p className="text-orange-700 font-sans text-[10px] font-bold uppercase tracking-widest mb-2">{item.business}</p>
-                <h3 className="text-2xl font-bold tracking-tight group-hover:text-orange-700 transition-colors">{item.name}</h3>
-                <div className="text-stone-900 font-sans font-bold text-lg mt-2">
-                  {item.price === "0" || !item.price ? "Free" : `$${item.price}`}
-                  {item.category === 'Service' && <span className="text-[10px] text-stone-400 ml-1">/ starting</span>}
-                </div>
-              </div>
-            </div>
-          ))}
+    <div className="min-h-screen bg-[#FDFCFB] text-stone-900 font-serif p-12">
+      <nav className="mb-20 flex justify-between items-center">
+        <Link href="/" className="text-xl font-bold tracking-tighter hover:text-orange-700">NovelArchStudio</Link>
+        <div className="flex gap-4">
+           <button onClick={() => setActiveTab("hero")} className={`px-6 py-2 rounded-full font-sans text-[10px] font-bold uppercase tracking-widest transition-all ${activeTab === "hero" ? "bg-orange-700 text-white" : "bg-white text-stone-400 border border-stone-100"}`}>
+             <Sparkles size={12} className="inline mr-2"/> MyArcHero
+           </button>
+           <button onClick={() => setActiveTab("stories")} className={`px-6 py-2 rounded-full font-sans text-[10px] font-bold uppercase tracking-widest transition-all ${activeTab === "stories" ? "bg-stone-900 text-white" : "bg-white text-stone-400 border border-stone-100"}`}>
+             <BookOpen size={12} className="inline mr-2"/> Stories
+           </button>
+           <button onClick={() => setActiveTab("marketplace")} className={`px-6 py-2 rounded-full font-sans text-[10px] font-bold uppercase tracking-widest transition-all ${activeTab === "marketplace" ? "bg-stone-900 text-white" : "bg-white text-stone-400 border border-stone-100"}`}>
+             <Package size={12} className="inline mr-2"/> Marketplace
+           </button>
         </div>
+      </nav>
 
-        {filteredItems.length === 0 && (
-          <div className="py-20 text-center">
-            <p className="font-serif italic text-stone-300 text-xl">No results found for "{searchQuery}"</p>
+      {/* --- HERO SECTION --- */}
+      {activeTab === "hero" && (
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white rounded-[3rem] border border-stone-100 p-12 shadow-xl flex flex-col md:flex-row gap-12 items-center">
+            <div className="w-64 h-64 bg-stone-50 rounded-[2rem] flex items-center justify-center relative border-2 border-dashed border-stone-200 group overflow-hidden">
+               <div className="text-stone-200 group-hover:scale-110 transition-transform">
+                 <Sparkles size={80} />
+               </div>
+               <div className="absolute bottom-4 bg-orange-700 text-white text-[10px] font-bold px-4 py-1 rounded-full uppercase tracking-widest">
+                 Lv. {heroStats.level}
+               </div>
+            </div>
+
+            <div className="flex-1 w-full">
+              <h1 className="text-5xl font-bold tracking-tight mb-2">MyArcHero</h1>
+              <p className="text-stone-400 italic mb-8">The guardian of your ArcWorld characters.</p>
+
+              <div className="grid grid-cols-2 gap-6 mb-8">
+                <div className="bg-stone-50 p-6 rounded-2xl">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400 flex items-center gap-2">
+                      <Heart size={12} className="text-red-500"/> Health
+                    </span>
+                    <span className="font-sans font-bold text-sm">{heroStats.health}%</span>
+                  </div>
+                  <div className="w-full h-2 bg-stone-200 rounded-full overflow-hidden">
+                    <div className="h-full bg-red-500 transition-all duration-500" style={{ width: `${heroStats.health}%` }} />
+                  </div>
+                </div>
+
+                <div className="bg-stone-50 p-6 rounded-2xl">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400 flex items-center gap-2">
+                      <Coffee size={12} className="text-orange-700"/> Hunger
+                    </span>
+                    <span className="font-sans font-bold text-sm">{heroStats.hunger}%</span>
+                  </div>
+                  <div className="w-full h-2 bg-stone-200 rounded-full overflow-hidden">
+                    <div className="h-full bg-orange-700 transition-all duration-500" style={{ width: `${heroStats.hunger}%` }} />
+                  </div>
+                </div>
+              </div>
+
+              <button 
+                onClick={() => router.push('/arc-world')}
+                className="w-full bg-stone-900 text-white py-5 rounded-2xl font-sans text-xs font-bold uppercase tracking-widest hover:bg-orange-700 transition-all flex items-center justify-center gap-3 shadow-lg"
+              >
+                <Sparkles size={16} /> Enter ArcWorld to Sustain Hero
+              </button>
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* --- MARKETPLACE VIEW --- */}
+      {activeTab === "marketplace" && (
+        <>
+          <InstructionBox type="image" />
+          <header className="mb-16 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+            <div>
+              <h1 className="text-5xl font-bold mb-2 tracking-tight">Your Marketplace</h1>
+              <p className="text-stone-400 font-sans italic text-lg">Manage your storefront and professional offerings.</p>
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+              <Link href="/marketplace/services/create" className="bg-stone-100 text-stone-600 px-6 py-4 rounded-2xl font-sans text-[10px] font-bold uppercase tracking-widest hover:bg-stone-200 transition-all flex items-center gap-2">
+                <Wrench size={14} /> Post Service
+              </Link>
+              <Link href="/marketplace/products/create" className="bg-stone-100 text-stone-600 px-6 py-4 rounded-2xl font-sans text-[10px] font-bold uppercase tracking-widest hover:bg-stone-200 transition-all flex items-center gap-2">
+                <Package size={14} /> Share Product
+              </Link>
+              
+              {!hasExistingStore ? (
+                <Link href="/marketplace/create" className="bg-orange-700 text-white px-8 py-4 rounded-2xl font-sans text-[10px] font-bold uppercase tracking-widest hover:bg-stone-900 transition-all shadow-xl flex items-center gap-2">
+                  <Store size={14} /> Create Store
+                </Link>
+              ) : (
+                <div className="bg-stone-100 text-stone-300 px-8 py-4 rounded-2xl font-sans text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 cursor-not-allowed">
+                  <ShieldCheck size={14} /> Manage Store
+                </div>
+              )}
+            </div>
+          </header>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {myProducts.map((item) => (
+              <div key={item.id} className={`p-8 rounded-[2.5rem] border shadow-sm flex flex-col group relative ${item.category === 'Store' ? 'bg-orange-50/30 border-orange-100 ring-2 ring-orange-200' : 'bg-white border-stone-100'}`}>
+                <button onClick={() => handleDeleteItem(item.id)} className="absolute top-6 right-6 p-2 text-stone-300 hover:text-red-500 opacity-0 group-hover:opacity-100 z-10">
+                  <Trash2 size={16} />
+                </button>
+
+                <div className="aspect-video bg-stone-50 rounded-2xl flex items-center justify-center text-5xl mb-6 overflow-hidden relative group/img">
+                  {item.image_url?.startsWith('http') ? (
+                    <img src={item.image_url} className="w-full h-full object-cover" alt={item.name} />
+                  ) : <span>{item.image_url || "📦"}</span>}
+                  <button onClick={() => handleUpdateImageUrl(item.id)} className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-[10px] font-bold uppercase">
+                    <LinkIcon size={20} className="mb-2" /> Update Image
+                  </button>
+                </div>
+
+                <div className="mb-8">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-2xl font-bold tracking-tight">{item.name}</h3>
+                    <span className={`text-[8px] font-bold uppercase px-2 py-1 rounded tracking-widest ${item.category === 'Store' ? 'bg-orange-700 text-white' : 'bg-stone-100 text-stone-500'}`}>{item.category}</span>
+                  </div>
+                  <p className="text-stone-400 font-sans text-[10px] font-bold uppercase tracking-[0.2em]">{item.business}</p>
+                </div>
+                
+                <div className="flex flex-col gap-3 mt-auto">
+                  {/* EDIT BUTTON: Fixed to route correctly to [id]/edit */}
+                  <Link 
+                    href={
+                      item.category === 'Service' 
+                        ? `/marketplace/services/${item.id}/edit` 
+                        : item.category === 'Store' 
+                          ? `/marketplace/${item.id}/edit` 
+                          : `/marketplace/products/${item.id}/edit`
+                    } 
+                    className="w-full flex items-center justify-center gap-2 bg-stone-900 text-white py-4 rounded-2xl text-[10px] font-sans font-bold uppercase tracking-widest hover:bg-orange-700 transition-all"
+                  >
+                    <Layout size={12} /> Edit {item.category === 'Store' ? 'Store Design' : 'Configuration'}
+                  </Link>
+
+                  <div className="flex gap-2">
+                    {/* VISIT STORE BUTTON: Takes users to the actual store page */}
+                    <Link 
+                      href={`/marketplace/${item.id}`} 
+                      target="_blank" 
+                      className="flex-1 flex items-center justify-center border border-stone-200 py-4 rounded-2xl text-[10px] font-sans font-bold uppercase tracking-widest text-stone-400 hover:text-stone-900 transition-all gap-2"
+                    >
+                      <ExternalLink size={12} /> View Webpage
+                    </Link>
+
+                    {/* SHARE BUTTON */}
+                    <button 
+                      onClick={() => handleShare(item)}
+                      className="px-5 border border-stone-200 rounded-2xl text-stone-400 hover:text-orange-700 hover:border-orange-200 transition-all flex items-center justify-center"
+                    >
+                      <Share2 size={14} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* --- STORIES VIEW --- */}
+      {activeTab === "stories" && (
+        <header className="mb-16">
+          <h1 className="text-5xl font-bold mb-2 tracking-tight">Your Drafts</h1>
+          <p className="text-stone-400 font-sans italic text-lg">Your creative works in progress.</p>
+        </header>
+      )}
     </div>
   );
 }

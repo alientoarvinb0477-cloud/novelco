@@ -47,7 +47,7 @@ export default function MainMarketplacePage() {
     <div className="min-h-screen bg-[#FDFCFB] text-stone-900 font-serif">
       {/* ─── NAVIGATION ─── */}
       <nav className="p-8 flex justify-between items-center border-b border-stone-100 bg-white/50 backdrop-blur-md sticky top-0 z-30">
-        <Link href="/" className="text-xl font-bold tracking-tighter">NovelCo.</Link>
+        <Link href="/" className="text-xl font-bold tracking-tighter">NovelArc.Studio</Link>
         <div className="flex gap-8 font-sans text-[10px] font-bold uppercase tracking-widest">
           <Link href="/library" className="hover:text-orange-700 transition-colors">Library</Link>
           <Link href="/community" className="hover:text-orange-700 transition-colors">Community</Link>

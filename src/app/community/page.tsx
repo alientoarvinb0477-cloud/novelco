@@ -99,7 +99,7 @@ const handleHeart = async (postId: string) => {
     <div className="min-h-screen bg-[#FDFCFB] text-stone-900 font-serif">
       {/* Navigation matching WriteNovel */}
       <nav className="flex justify-between items-center px-8 py-4 border-b border-stone-200 bg-white/80 backdrop-blur-md sticky top-0 z-10">
-        <Link href="/" className="text-xl font-bold tracking-tighter">NovelArcStudio.</Link>
+        <Link href="/" className="text-xl font-bold tracking-tighter">NovelArc.Studio</Link>
       </nav>
 
       <main className="max-w-2xl mx-auto pt-16 px-6 text-center">

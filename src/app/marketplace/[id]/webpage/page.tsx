@@ -61,14 +61,7 @@ export default function MarketplaceExplore() {
           <span className="font-sans text-[10px] font-bold uppercase tracking-widest">Back to Home</span>
         </button>
         
-        {/* UPDATED: "Visit Webpage" navigation button */}
-        <button 
-          onClick={() => router.push('/profile')} // Or wherever your personal store dashboard is
-          className="flex items-center gap-2 font-sans text-[10px] font-bold uppercase tracking-widest bg-stone-900 text-white px-6 py-3 rounded-full hover:bg-orange-700 transition-all shadow-lg"
-        >
-          <Globe size={14} /> My Workspace
-        </button>
-      </div>
+    
 
       <div className="max-w-6xl mx-auto">
         <header className="mb-12">

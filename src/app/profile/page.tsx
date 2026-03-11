@@ -63,21 +63,22 @@ export default function ProfilePage() {
     if (!error) fetchData();
   };
 
+  // SHARE FUNCTIONALITY
   const handleShare = async (item: any) => {
     const url = `${window.location.origin}/marketplace/${item.id}`;
     if (navigator.share) {
       try {
         await navigator.share({
           title: item.name,
-          text: `Check out ${item.name} on NovelArchStudio`,
+          text: `Check out ${item.name}'s store on NovelArchStudio!`,
           url: url,
         });
       } catch (err) {
-        console.log("Error sharing", err);
+        console.log("Error sharing:", err);
       }
     } else {
       navigator.clipboard.writeText(url);
-      alert("Link copied to clipboard!");
+      alert("Store link copied to clipboard!");
     }
   };
 
@@ -100,7 +101,7 @@ export default function ProfilePage() {
         </div>
       </nav>
 
-      {/* --- HERO VIEW --- */}
+      {/* --- HERO SECTION --- */}
       {activeTab === "hero" && (
         <div className="max-w-4xl mx-auto">
           <div className="bg-white rounded-[3rem] border border-stone-100 p-12 shadow-xl flex flex-col md:flex-row gap-12 items-center">
@@ -151,24 +152,19 @@ export default function ProfilePage() {
               </button>
             </div>
           </div>
-          
-          <div className="mt-12 text-center">
-            <p className="text-stone-400 text-sm italic">Sustain your hero in the 3D world to save more characters.</p>
-          </div>
         </div>
       )}
 
-      {/* --- MARKETPLACE HEADER --- */}
-      {activeTab === "marketplace" && <InstructionBox type="image" />}
+      {/* --- MARKETPLACE VIEW --- */}
+      {activeTab === "marketplace" && (
+        <>
+          <InstructionBox type="image" />
+          <header className="mb-16 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+            <div>
+              <h1 className="text-5xl font-bold mb-2 tracking-tight">Your Marketplace</h1>
+              <p className="text-stone-400 font-sans italic text-lg">Manage your storefront and professional offerings.</p>
+            </div>
 
-      {activeTab !== "hero" && (
-        <header className="mb-16 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-          <div>
-            <h1 className="text-5xl font-bold mb-2 tracking-tight">{activeTab === "stories" ? "Your Drafts" : "Your Marketplace"}</h1>
-            <p className="text-stone-400 font-sans italic text-lg">{activeTab === "stories" ? "Your creative works in progress." : "Manage your storefront and professional offerings."}</p>
-          </div>
-
-          {activeTab === "marketplace" && (
             <div className="flex flex-wrap gap-3">
               <Link href="/marketplace/services/create" className="bg-stone-100 text-stone-600 px-6 py-4 rounded-2xl font-sans text-[10px] font-bold uppercase tracking-widest hover:bg-stone-200 transition-all flex items-center gap-2">
                 <Wrench size={14} /> Post Service
@@ -187,68 +183,79 @@ export default function ProfilePage() {
                 </div>
               )}
             </div>
-          )}
-        </header>
+          </header>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {myProducts.map((item) => (
+              <div key={item.id} className={`p-8 rounded-[2.5rem] border shadow-sm flex flex-col group relative ${item.category === 'Store' ? 'bg-orange-50/30 border-orange-100 ring-2 ring-orange-200' : 'bg-white border-stone-100'}`}>
+                <button onClick={() => handleDeleteItem(item.id)} className="absolute top-6 right-6 p-2 text-stone-300 hover:text-red-500 opacity-0 group-hover:opacity-100 z-10">
+                  <Trash2 size={16} />
+                </button>
+
+                <div className="aspect-video bg-stone-50 rounded-2xl flex items-center justify-center text-5xl mb-6 overflow-hidden relative group/img">
+                  {item.image_url?.startsWith('http') ? (
+                    <img src={item.image_url} className="w-full h-full object-cover" alt={item.name} />
+                  ) : <span>{item.image_url || "📦"}</span>}
+                  <button onClick={() => handleUpdateImageUrl(item.id)} className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-[10px] font-bold uppercase">
+                    <LinkIcon size={20} className="mb-2" /> Update Image
+                  </button>
+                </div>
+
+                <div className="mb-8">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-2xl font-bold tracking-tight">{item.name}</h3>
+                    <span className={`text-[8px] font-bold uppercase px-2 py-1 rounded tracking-widest ${item.category === 'Store' ? 'bg-orange-700 text-white' : 'bg-stone-100 text-stone-500'}`}>{item.category}</span>
+                  </div>
+                  <p className="text-stone-400 font-sans text-[10px] font-bold uppercase tracking-[0.2em]">{item.business}</p>
+                </div>
+                
+                <div className="flex flex-col gap-3 mt-auto">
+                  {/* EDIT BUTTON: Fixed to route correctly to [id]/edit */}
+                  <Link 
+                    href={
+                      item.category === 'Service' 
+                        ? `/marketplace/services/${item.id}/edit` 
+                        : item.category === 'Store' 
+                          ? `/marketplace/${item.id}/edit` 
+                          : `/marketplace/products/${item.id}/edit`
+                    } 
+                    className="w-full flex items-center justify-center gap-2 bg-stone-900 text-white py-4 rounded-2xl text-[10px] font-sans font-bold uppercase tracking-widest hover:bg-orange-700 transition-all"
+                  >
+                    <Layout size={12} /> Edit {item.category === 'Store' ? 'Store Design' : 'Configuration'}
+                  </Link>
+
+                  <div className="flex gap-2">
+                    {/* VISIT STORE BUTTON: Takes users to the actual store page */}
+                    <Link 
+                      href={`/marketplace/${item.id}`} 
+                      target="_blank" 
+                      className="flex-1 flex items-center justify-center border border-stone-200 py-4 rounded-2xl text-[10px] font-sans font-bold uppercase tracking-widest text-stone-400 hover:text-stone-900 transition-all gap-2"
+                    >
+                      <ExternalLink size={12} /> View Webpage
+                    </Link>
+
+                    {/* SHARE BUTTON */}
+                    <button 
+                      onClick={() => handleShare(item)}
+                      className="px-5 border border-stone-200 rounded-2xl text-stone-400 hover:text-orange-700 hover:border-orange-200 transition-all flex items-center justify-center"
+                    >
+                      <Share2 size={14} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
-      {/* --- PRODUCTS GRID --- */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {activeTab === "marketplace" && myProducts.map((item) => (
-          <div key={item.id} className={`p-8 rounded-[2.5rem] border shadow-sm flex flex-col group relative ${item.category === 'Store' ? 'bg-orange-50/30 border-orange-100 ring-2 ring-orange-200' : 'bg-white border-stone-100'}`}>
-            <button onClick={() => handleDeleteItem(item.id)} className="absolute top-6 right-6 p-2 text-stone-300 hover:text-red-500 opacity-0 group-hover:opacity-100 z-10">
-              <Trash2 size={16} />
-            </button>
-
-            <div className="aspect-video bg-stone-50 rounded-2xl flex items-center justify-center text-5xl mb-6 overflow-hidden relative group/img">
-              {item.image_url?.startsWith('http') ? (
-                <img src={item.image_url} className="w-full h-full object-cover" alt={item.name} />
-              ) : <span>{item.image_url || "📦"}</span>}
-              <button onClick={() => handleUpdateImageUrl(item.id)} className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-[10px] font-bold uppercase">
-                <LinkIcon size={20} className="mb-2" /> Update Image
-              </button>
-            </div>
-
-            <div className="mb-8">
-              <div className="flex justify-between items-center">
-                <h3 className="text-2xl font-bold tracking-tight">{item.name}</h3>
-                <span className={`text-[8px] font-bold uppercase px-2 py-1 rounded tracking-widest ${item.category === 'Store' ? 'bg-orange-700 text-white' : 'bg-stone-100 text-stone-500'}`}>{item.category}</span>
-              </div>
-              <p className="text-stone-400 font-sans text-[10px] font-bold uppercase tracking-[0.2em]">{item.business}</p>
-            </div>
-            
-            <div className="flex flex-col gap-3 mt-auto">
-              {/* FIXED EDIT LINK: Matches your [id]/edit folder structure */}
-              <Link 
-                href={
-                  item.category === 'Service' 
-                    ? `/marketplace/services/${item.id}/edit` 
-                    : item.category === 'Store' 
-                      ? `/marketplace/${item.id}/edit` 
-                      : `/marketplace/products/${item.id}/edit`
-                } 
-                className="w-full flex items-center justify-center gap-2 bg-stone-900 text-white py-4 rounded-2xl text-[10px] font-sans font-bold uppercase tracking-widest hover:bg-orange-700 transition-all"
-              >
-                <Layout size={12} /> Edit {item.category === 'Store' ? 'Store Design' : 'Configuration'}
-              </Link>
-
-              <div className="flex gap-2">
-                {/* VISIT STORE: Points to [id] page */}
-                <Link href={`/marketplace/${item.id}`} target="_blank" className="flex-1 flex items-center justify-center border border-stone-200 py-4 rounded-2xl text-[10px] font-sans font-bold uppercase tracking-widest text-stone-400 hover:text-stone-900 transition-all gap-2">
-                  <ExternalLink size={12} /> Visit Store
-                </Link>
-
-                {/* SHARE BUTTON */}
-                <button 
-                  onClick={() => handleShare(item)}
-                  className="px-4 border border-stone-200 rounded-2xl text-stone-400 hover:text-orange-700 hover:border-orange-200 transition-all flex items-center justify-center"
-                >
-                  <Share2 size={14} />
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+      {/* --- STORIES VIEW --- */}
+      {activeTab === "stories" && (
+        <header className="mb-16">
+          <h1 className="text-5xl font-bold mb-2 tracking-tight">Your Drafts</h1>
+          <p className="text-stone-400 font-sans italic text-lg">Your creative works in progress.</p>
+        </header>
+      )}
     </div>
   );
 }
